@@ -4,19 +4,21 @@
   <meta charset="UTF-8">
   <title>You're Invited 🎉</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       background: linear-gradient(135deg, #ff9a9e, #fad0c4);
       color: #333;
-      padding-top: 100px;
-      overflow: hidden;
+      padding-top: 60px;
+      overflow-x: hidden;
+      min-height: 100vh;
     }
 
-    .emoji { position: fixed; font-size: 24px; animation: float 6s linear infinite; opacity: 0.7; }
+    .emoji { position: fixed; font-size: 24px; animation: float 6s linear infinite; opacity: 0.7; pointer-events: none; }
     @keyframes float { 0% { transform: translateY(100vh); } 100% { transform: translateY(-10vh); } }
 
-    .card { background: white; padding: 30px; border-radius: 20px; width: 320px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: pop 0.6s ease; }
+    .card { background: white; padding: 30px; border-radius: 20px; width: 340px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: pop 0.6s ease; }
     @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
     button { margin: 10px; padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; transition: transform 0.2s; }
@@ -25,8 +27,18 @@
     .no { background: #f44336; color: white; }
     .hidden { display: none; }
     img.gif { width: 120px; margin: 10px auto; display: block; border-radius: 12px; }
-    #responses { margin-top: 20px; text-align: left; }
     iframe { border-radius: 12px; margin: 10px auto; display: block; }
+
+    #nameInput { padding: 10px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 10px; width: 80%; font-size: 15px; }
+
+    .rsvp-list { margin-top: 10px; text-align: left; max-height: 200px; overflow-y: auto; }
+    .rsvp-item { display: flex; justify-content: space-between; padding: 6px 10px; border-radius: 8px; margin: 4px 0; font-size: 14px; }
+    .rsvp-yes { background: #e8f5e9; }
+    .rsvp-no { background: #ffebee; }
+    .rsvp-count { font-size: 13px; color: #888; margin-bottom: 6px; }
+
+    .see-responses-btn { background: #f0f0f0; color: #333; font-size: 14px; padding: 8px 16px; }
+    .admin-link { font-size: 12px; color: #aaa; margin-top: 15px; cursor: pointer; text-decoration: underline; display: block; }
   </style>
 </head>
 <body>
@@ -39,90 +51,162 @@
 
 <div class="card">
   <h2>🎂 You're Invited!</h2>
-  <p>Bestie, you are invited to Minjin's birthday dinner and, potentially, an after-pub crawl... Please let me know if you wanna come for dinner or pub crawl or both ❤️😘.</p>
+  <p>Bestie you are invited for Minjin's birthday dinner and potential after pub crawl... Please select your choice and RSVP.</p>
 
   <img class="gif" src="https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif" alt="cute gif">
 
-  <input id="nameInput" placeholder="Enter your name bestie 😌" style="padding:10px; border-radius:10px; border:1px solid #ccc; margin-bottom:10px; width:80%;">
+  <input id="nameInput" placeholder="Enter your name bestie 😌">
   <div id="buttons">
     <button class="yes" onclick="rsvpYes()">Yes 🎉</button>
     <button class="no" id="noBtn" onclick="rsvpNo()">No 😢</button>
   </div>
 
   <div id="response" class="hidden"></div>
-  <button id="showResponses">👀 See responses</button>
-  <div id="responses" class="hidden"></div>
+
+  <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+  <button class="see-responses-btn" onclick="toggleResponses()">👀 See who's coming</button>
+  <div id="responsesPanel" class="hidden">
+    <div class="rsvp-count" id="rsvpCount"></div>
+    <div class="rsvp-list" id="rsvpList"></div>
+  </div>
+
+  <span class="admin-link" onclick="clearAll()" style="display:none" id="adminClear">🔧 Clear all RSVPs</span>
 </div>
 
 <script>
-let rsvpData = JSON.parse(localStorage.getItem('rsvpData') || '[]');
-
-function saveRSVP(name, answer) {
-  rsvpData.push({name, answer});
-  localStorage.setItem('rsvpData', JSON.stringify(rsvpData));
-}
-
-function rsvpYes() {
-  const name = document.getElementById('nameInput').value || 'Anonymous';
-  saveRSVP(name, 'Yes');
-
-  const res = document.getElementById('response');
-  res.classList.remove('hidden');
-  res.innerHTML = `
-    <h3>Yay! 🎉</h3>
-    <iframe width="300" height="150" src="https://www.youtube.com/embed/DJ1pIRhMGs8?autoplay=1&controls=0" 
-    title="Dopamine Re-Edit" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <img class="gif" src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif">
-    <p>Here's the location:</p>
-    <p><strong><a href="https://maps.app.goo.gl/cMtqJ7rvLxvYjP7i9" target="_blank">Bělehradská 573/61, 120 00 Vinohrady 📍</a></strong></p>
-    <p>Time: 7:30 PM</p>
-  `;
-  document.getElementById('buttons').style.display = 'none';
-}
-
-function rsvpNo() {
-  const name = document.getElementById('nameInput').value || 'Anonymous';
-  saveRSVP(name, 'No');
-
-  const res = document.getElementById('response');
-  res.classList.remove('hidden');
-  res.innerHTML = `
-    <h3>See you around, pookie 😌</h3>
-    <iframe width="300" height="150" src="https://www.youtube.com/embed/IdZz6hGogoo?autoplay=1&controls=0" 
-    title="All By Myself" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <img class="gif" src="https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif">
-  `;
-  document.getElementById('buttons').style.display = 'none';
-}
-
-// Runaway No button
-const noBtn = document.getElementById('noBtn');
-let attempts = 0;
-noBtn.addEventListener('mouseover', () => {
-  attempts++;
-  const res = document.getElementById('response');
-
-  if (attempts < 4) {
-    const x = Math.random() * (window.innerWidth - 100);
-    const y = Math.random() * (window.innerHeight - 50);
-    noBtn.style.position = 'fixed';
-    noBtn.style.left = x + 'px';
-    noBtn.style.top = y + 'px';
-
-    res.classList.remove('hidden');
-    res.innerHTML = `<p>why are you like this 😭</p>`;
-  } else {
-    noBtn.style.position = 'static';
-    res.innerHTML = `<p>fine… if you insist 🙄</p>`;
+  // ---- Storage helpers using Claude persistent storage ----
+  async function loadRSVPs() {
+    try {
+      const result = await window.storage.get('minjin-birthday-rsvps', true);
+      return result ? JSON.parse(result.value) : [];
+    } catch {
+      return [];
+    }
   }
-});
 
-// Show stored responses
-document.getElementById('showResponses').addEventListener('click', () => {
-  const responsesDiv = document.getElementById('responses');
-  responsesDiv.classList.toggle('hidden');
-  responsesDiv.innerHTML = '<h4>RSVPs:</h4>' + rsvpData.map(r => `<p>${r.name}: ${r.answer}</p>`).join('');
-});
+  async function saveRSVPs(data) {
+    try {
+      await window.storage.set('minjin-birthday-rsvps', JSON.stringify(data), true);
+    } catch (e) {
+      console.error('Save failed', e);
+    }
+  }
+
+  // ---- RSVP Actions ----
+  async function rsvpYes() {
+    const name = document.getElementById('nameInput').value.trim() || 'Anonymous';
+    const data = await loadRSVPs();
+    data.push({ name, answer: 'Yes', time: new Date().toLocaleString() });
+    await saveRSVPs(data);
+
+    const res = document.getElementById('response');
+    res.classList.remove('hidden');
+    res.innerHTML = `
+      <h3>Yay! 🎉</h3>
+      <iframe width="300" height="150" src="https://www.youtube.com/embed/DJ1pIRhMGs8?autoplay=1&controls=0" 
+      title="Dopamine Re-Edit" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <img class="gif" src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif">
+      <p>Here's the location:</p>
+      <p><strong><a href="https://maps.app.goo.gl/cMtqJ7rvLxvYjP7i9" target="_blank">Bělehradská 573/61, 120 00 Vinohrady 📍</a></strong></p>
+      <p>Time: 7:30 PM</p>
+    `;
+    document.getElementById('buttons').style.display = 'none';
+    refreshResponses();
+  }
+
+  async function rsvpNo() {
+    const name = document.getElementById('nameInput').value.trim() || 'Anonymous';
+    const data = await loadRSVPs();
+    data.push({ name, answer: 'No', time: new Date().toLocaleString() });
+    await saveRSVPs(data);
+
+    const res = document.getElementById('response');
+    res.classList.remove('hidden');
+    res.innerHTML = `
+      <h3>See you around, pookie 😌</h3>
+      <iframe width="300" height="150" src="https://www.youtube.com/embed/IdZz6hGogoo?autoplay=1&controls=0" 
+      title="All By Myself" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <img class="gif" src="https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif">
+    `;
+    document.getElementById('buttons').style.display = 'none';
+    refreshResponses();
+  }
+
+  // ---- Runaway No Button ----
+  const noBtn = document.getElementById('noBtn');
+  let attempts = 0;
+  noBtn.addEventListener('mouseover', () => {
+    attempts++;
+    const res = document.getElementById('response');
+    if (attempts < 4) {
+      const x = Math.random() * (window.innerWidth - 120);
+      const y = Math.random() * (window.innerHeight - 60);
+      noBtn.style.position = 'fixed';
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+      res.classList.remove('hidden');
+      res.innerHTML = `<p>why are you like this 😭</p>`;
+    } else {
+      noBtn.style.position = 'static';
+      res.classList.remove('hidden');
+      res.innerHTML = `<p>fine… if you insist 🙄</p>`;
+    }
+  });
+
+  // ---- Show Responses ----
+  let responsesVisible = false;
+
+  async function toggleResponses() {
+    responsesVisible = !responsesVisible;
+    const panel = document.getElementById('responsesPanel');
+    if (responsesVisible) {
+      panel.classList.remove('hidden');
+      await refreshResponses();
+    } else {
+      panel.classList.add('hidden');
+    }
+  }
+
+  async function refreshResponses() {
+    const data = await loadRSVPs();
+    const yesCount = data.filter(r => r.answer === 'Yes').length;
+    const noCount = data.filter(r => r.answer === 'No').length;
+
+    document.getElementById('rsvpCount').innerHTML = 
+      `🎉 <strong>${yesCount}</strong> coming &nbsp;|&nbsp; 😢 <strong>${noCount}</strong> can't make it`;
+
+    document.getElementById('rsvpList').innerHTML = data.length === 0 
+      ? '<p style="color:#aaa;font-size:13px;text-align:center">No RSVPs yet!</p>'
+      : data.map(r => `
+          <div class="rsvp-item ${r.answer === 'Yes' ? 'rsvp-yes' : 'rsvp-no'}">
+            <span>${r.answer === 'Yes' ? '🎉' : '😢'} ${r.name}</span>
+            <span style="color:#aaa;font-size:11px">${r.time}</span>
+          </div>
+        `).join('');
+  }
+
+  // ---- Admin clear (secret) ----
+  let titleClicks = 0;
+  document.querySelector('h2').addEventListener('click', () => {
+    titleClicks++;
+    if (titleClicks >= 5) {
+      document.getElementById('adminClear').style.display = 'block';
+    }
+  });
+
+  async function clearAll() {
+    if (confirm('Clear all RSVPs? This cannot be undone!')) {
+      await window.storage.set('minjin-birthday-rsvps', JSON.stringify([]), true);
+      await refreshResponses();
+      alert('Cleared!');
+    }
+  }
+
+  // Auto-load responses count on page load
+  (async () => {
+    const data = await loadRSVPs();
+    if (data.length > 0) await refreshResponses();
+  })();
 </script>
 
 </body>
